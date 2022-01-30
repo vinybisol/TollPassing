@@ -1,11 +1,12 @@
 ﻿using TollPassing.Models;
+using TollPassing.Models.InputModel.OutputModel;
 using TollPassing.Repositories;
 
 namespace TollPassing.Services
 {
     public interface IPassingService
     {
-        Task<TollPassingModel> AddPassing(TollPassingModel passing);
+        Task<OutputTollPassingModel> AddPassing(TollPassingModel passing);
     }
     public class PassingService : IPassingService
     {
@@ -16,10 +17,23 @@ namespace TollPassing.Services
             _passingRepository = passingRepository;
         }
 
-        public async Task<TollPassingModel> AddPassing(TollPassingModel passing)
+        public async Task<OutputTollPassingModel> AddPassing(TollPassingModel passing)
         {
-            passing.Price = 7.90M;
-            return await _passingRepository.CreateAsync(passing);
+            var ret = await _passingRepository.CreateAsync(passing);
+            var passingCount = await _passingRepository.CountPlateInCurrentMonthAsync(ret.LicensePlate);
+            
+            ret.UpdatePrice(passingCount, out decimal discountLevel);
+
+            return new OutputTollPassingModel()
+            {
+                Price = ret.Price,
+                Id = ret.Id,
+                CountOfPassedInMonth = passingCount,
+                DateTime = ret.DateTime.ToLocalTime(),
+                LicensePlate = ret.LicensePlate,
+                Vehicle = ret.Vehicle,
+                DiscountLevel = discountLevel,
+            };
         }
     }
 }

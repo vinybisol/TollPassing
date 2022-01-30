@@ -3,6 +3,6 @@
     public class InputTollPassingModel
     {   
         public string? Vehicle { get; set; }
-        public string? LicensePlate { get; set; }
+        public string LicensePlate { get; set; }
     }
 }

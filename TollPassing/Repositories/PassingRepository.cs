@@ -9,6 +9,7 @@ namespace TollPassing.Repositories
         Task<TollPassingModel> CreateAsync(TollPassingModel entity);
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<TollPassingModel>> GetAllAsync();
+        Task<int> CountPlateInCurrentMonthAsync(string plate);
         Task<TollPassingModel> GetAsync(int id);
         Task<TollPassingModel> UpdateAsync(TollPassingModel entity);
     }
@@ -67,6 +68,12 @@ namespace TollPassing.Repositories
             {
                 throw new Exception($"Impossible to find passing => {e.Message}");
             }
+        }
+
+        public async Task<int> CountPlateInCurrentMonthAsync(string plate)
+        {
+            DateTime currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 01).ToUniversalTime();
+            return await _postgresContext.Passing.Where(w => w.LicensePlate == plate && w.DateTime >= currentMonth).CountAsync();
         }
         public async Task<TollPassingModel> GetAsync(int id)
         {
